@@ -7,26 +7,49 @@ function loadExcel(event) {
   if (!file) return;
   // Ejemplo: utilizar XLSX para leer el archivo
   const reader = new FileReader();
-  reader.onload = function(e) {
+  reader.onload = function (e) {
     // Procesa el contenido del Excel...
     alert("Excel cargado: " + file.name);
   };
   reader.readAsBinaryString(file);
 }
 
+function colorNameToHex(color) {
+  const colors = {
+    "black": "#000000",
+    "white": "#ffffff",
+    "red": "#ff0000",
+    "green": "#008000",
+    "blue": "#0000ff",
+    "yellow": "#ffff00",
+    "purple": "#800080",
+    "gray": "#808080",
+    "grey": "#808080",
+    "cyan": "#00ffff",
+    "magenta": "#ff00ff"
+  };
+
+  // Si el color ya está en formato hexadecimal, lo retorna tal cual
+  if (color && color.startsWith('#')) {
+    return color;
+  }
+
+  return colors[color.toLowerCase()] || "#000000"; // Si no está en la lista, usa negro por defecto
+}
+
 // Función para agregar un cuadro de texto con marcador de posición
 function addText() {
-    const text = new fabric.Textbox('Ingrese texto...', {
-      left: 100,
-      top: 100,
-      fontSize: 20,
-      fill: '#000000',
-      textAlign: 'left',
-      fontFamily: 'Arial',
-      width: 300  // Define un ancho fijo para que se haga wrapping en lugar de estirarse.
-    });
-    canvas.add(text);
-  }
+  const text = new fabric.Textbox('Ingrese texto...', {
+    left: 100,
+    top: 100,
+    fontSize: 20,
+    fill: '#000000',
+    textAlign: 'left',
+    fontFamily: 'Arial',
+    width: 300  // Define un ancho fijo para que se haga wrapping en lugar de estirarse.
+  });
+  canvas.add(text);
+}
 
 // Función para activar el input de imágenes
 function triggerImageUpload() {
@@ -34,25 +57,25 @@ function triggerImageUpload() {
 }
 
 function loadTemplate(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      const json = e.target.result;
-      canvas.loadFromJSON(json, function() {
-        canvas.renderAll();
-      });
-    };
-    reader.readAsText(file);
-  }
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    const json = e.target.result;
+    canvas.loadFromJSON(json, function () {
+      canvas.renderAll();
+    });
+  };
+  reader.readAsText(file);
+}
 
 // Manejo de la carga de imagen
-document.getElementById('input-image').addEventListener('change', function(event) {
+document.getElementById('input-image').addEventListener('change', function (event) {
   let file = event.target.files[0];
   if (!file) return;
   let reader = new FileReader();
-  reader.onload = function(e) {
-    fabric.Image.fromURL(e.target.result, function(img) {
+  reader.onload = function (e) {
+    fabric.Image.fromURL(e.target.result, function (img) {
       img.set({
         left: 100,
         top: 100,
@@ -70,7 +93,7 @@ function loadExcel(event) {
   if (!file) return;
   let reader = new FileReader();
   reader.readAsBinaryString(file);
-  reader.onload = function(e) {
+  reader.onload = function (e) {
     let data = e.target.result;
     let workbook = XLSX.read(data, { type: 'binary' });
     let sheet = workbook.Sheets[workbook.SheetNames[0]];
@@ -85,7 +108,7 @@ function loadExcel(event) {
 // Mostrar/ocultar y actualizar la barra de herramientas flotante según la selección
 canvas.on('selection:created', updateFloatingToolbar);
 canvas.on('selection:updated', updateFloatingToolbar);
-canvas.on('selection:cleared', function() {
+canvas.on('selection:cleared', function () {
   document.getElementById("floating-toolbar").style.display = "none";
 });
 
@@ -102,7 +125,7 @@ function updateFloatingToolbar() {
     if (activeObject.type === 'textbox' || activeObject.type === 'i-text' || activeObject.type === 'text') {
       document.getElementById("text-controls").style.display = "block";
       document.getElementById("text-align").value = activeObject.textAlign || "left";
-      document.getElementById("text-color").value = activeObject.fill || "#000000";
+      document.getElementById("text-color").value = colorNameToHex(activeObject.fill) || "#000000";
       document.getElementById("font-family").value = activeObject.fontFamily || "Arial";
       document.getElementById("font-size").value = activeObject.fontSize || 30;
       document.getElementById("text-bold").checked = (activeObject.fontWeight === 'bold');
@@ -163,7 +186,7 @@ function dragElement(elmnt) {
   }
 }
 
-document.addEventListener('keydown', function(e) {
+document.addEventListener('keydown', function (e) {
   // Usamos e.key o e.keyCode para detectar la tecla "Delete" (tecla Supr)
   if (e.key === 'Delete' || e.keyCode === 46) {
     deleteSelected();
@@ -171,30 +194,30 @@ document.addEventListener('keydown', function(e) {
 });
 
 // Actualización de propiedades de texto a partir de los controles
-document.getElementById("text-align").addEventListener("change", function() {
+document.getElementById("text-align").addEventListener("change", function () {
   let activeObject = canvas.getActiveObject();
   if (activeObject) {
     if (activeObject.isEditing) {
-        activeObject.setSelectionStyles("textAlign", this.value);
-        
-    } else{
-        activeObject.set("textAlign", this.value);
+      activeObject.setSelectionStyles("textAlign", this.value);
+
+    } else {
+      activeObject.set("textAlign", this.value);
     }
     canvas.renderAll();
   }
 });
-document.getElementById("text-color").addEventListener("change", function() {
-    let activeObject = canvas.getActiveObject();
-    if (activeObject) {
-      if (activeObject.isEditing) {
-        activeObject.setSelectionStyles({ fill: this.value });
-      } else {
-        activeObject.set("fill", this.value);
-      }
-      canvas.renderAll();
+document.getElementById("text-color").addEventListener("change", function () {
+  let activeObject = canvas.getActiveObject();
+  if (activeObject) {
+    if (activeObject.isEditing) {
+      activeObject.setSelectionStyles({ fill: this.value });
+    } else {
+      activeObject.set("fill", this.value);
     }
-  });
-document.getElementById("font-family").addEventListener("change", function() {
+    canvas.renderAll();
+  }
+});
+document.getElementById("font-family").addEventListener("change", function () {
   let activeObject = canvas.getActiveObject();
   if (activeObject) {
     if (activeObject.isEditing) {
@@ -205,7 +228,7 @@ document.getElementById("font-family").addEventListener("change", function() {
     canvas.renderAll();
   }
 });
-document.getElementById("font-size").addEventListener("change", function() {
+document.getElementById("font-size").addEventListener("change", function () {
   let activeObject = canvas.getActiveObject();
   const newSize = parseInt(this.value, 10);
   if (activeObject) {
@@ -217,7 +240,7 @@ document.getElementById("font-size").addEventListener("change", function() {
     canvas.renderAll();
   }
 });
-document.getElementById("text-bold").addEventListener("change", function() {
+document.getElementById("text-bold").addEventListener("change", function () {
   let activeObject = canvas.getActiveObject();
   if (activeObject) {
     if (activeObject.isEditing) {
@@ -230,7 +253,7 @@ document.getElementById("text-bold").addEventListener("change", function() {
     canvas.renderAll();
   }
 });
-document.getElementById("text-italic").addEventListener("change", function() {
+document.getElementById("text-italic").addEventListener("change", function () {
   let activeObject = canvas.getActiveObject();
   if (activeObject) {
     if (activeObject.isEditing) {
@@ -243,14 +266,14 @@ document.getElementById("text-italic").addEventListener("change", function() {
 });
 
 // Controles de capas: traer al frente y enviar al fondo
-document.getElementById("bring-to-front").addEventListener("click", function() {
+document.getElementById("bring-to-front").addEventListener("click", function () {
   let activeObject = canvas.getActiveObject();
   if (activeObject) {
     activeObject.bringToFront();
     canvas.renderAll();
   }
 });
-document.getElementById("send-to-back").addEventListener("click", function() {
+document.getElementById("send-to-back").addEventListener("click", function () {
   let activeObject = canvas.getActiveObject();
   if (activeObject) {
     activeObject.sendToBack();
@@ -260,7 +283,7 @@ document.getElementById("send-to-back").addEventListener("click", function() {
 
 
 // Evento para insertar el marcador en el texto activo
-document.getElementById("columns-menu").addEventListener("change", function() {
+document.getElementById("columns-menu").addEventListener("change", function () {
   const col = this.value;
   if (!col) return;
   const placeholder = `{{${col}}}`;
@@ -325,7 +348,7 @@ function generateCertificates() {
     return new Promise((resolve) => {
       // Clonar el canvas original
       let clonedCanvas = new fabric.Canvas(null, { width: 1123, height: 794 });
-      clonedCanvas.loadFromJSON(canvas.toJSON(), function() {
+      clonedCanvas.loadFromJSON(canvas.toJSON(), function () {
         // Reemplazar marcadores de texto (excepto el QR)
         clonedCanvas.getObjects().forEach(obj => {
           if ((obj.type === 'textbox' || obj.type === 'i-text' || obj.type === 'text') && !obj.text.includes('{{qr}}')) {
@@ -348,13 +371,13 @@ function generateCertificates() {
               let fontSize = obj.fontSize || 30;
               let qrWidth = fontSize * 5;
               // Usando QRCode.toCanvas de QRCode.js para generar el QR
-              QRCode.toCanvas(qrData, { width: qrWidth, margin: 2 }, function(err, canvasQR) {
+              QRCode.toCanvas(qrData, { width: qrWidth, margin: 2 }, function (err, canvasQR) {
                 if (err) {
                   console.error("Error generando QR:", err);
                   resolveRow();
                 } else {
                   const url = canvasQR.toDataURL();
-                  fabric.Image.fromURL(url, function(img) {
+                  fabric.Image.fromURL(url, function (img) {
                     img.set({
                       left: obj.left,
                       top: obj.top,
@@ -390,7 +413,7 @@ function generateCertificates() {
       return new Promise((resolve) => {
         // Genera un nombre único basado en la fila y el índice
         let uniqueFileName = generateUniqueFileName(cert.row, index);
-        exportToPDF(cert.canvas, uniqueFileName, function(success) {
+        exportToPDF(cert.canvas, uniqueFileName, function (success) {
           pdfProcessed++;
           updateProgress(pdfProcessed, totalCertificates);
           if (!success) {
@@ -416,7 +439,7 @@ function generateUniqueFileName(row, index) {
   let name = row['nombre'] || row['nombres'] || row['NOMBRE'] || row['NOMBRES'] || `certificado_${index}`;
   // Reemplaza espacios por guiones bajos
   let baseName = name.replace(/\s+/g, '_');
-  
+
   // Si el nombre base aún no se ha usado, se registra y se retorna tal cual.
   if (!fileNameCounts[baseName]) {
     fileNameCounts[baseName] = 1;
@@ -465,24 +488,24 @@ function exportToPDF(canvasInstance, fileName, callback) {
       y: 0,
       scale: 1
     })
-    .then(() => {
-      zip.file(`${fileName}.pdf`, pdf.output('blob'));
-      callback(true);
-    })
-    .catch((error) => {
-      console.error("Error al exportar a PDF:", error);
-      callback(false);
-    });
+      .then(() => {
+        zip.file(`${fileName}.pdf`, pdf.output('blob'));
+        callback(true);
+      })
+      .catch((error) => {
+        console.error("Error al exportar a PDF:", error);
+        callback(false);
+      });
   } catch (error) {
     console.error("Error al exportar a PDF:", error);
     callback(false);
   }
 }
-  
+
 
 // Función para descargar el archivo ZIP que contiene todos los certificados generados
 function downloadAll() {
-  zip.generateAsync({ type: 'blob' }).then(function(content) {
+  zip.generateAsync({ type: 'blob' }).then(function (content) {
     let a = document.createElement("a");
     a.href = URL.createObjectURL(content);
     a.download = "certificados.zip";
@@ -512,7 +535,7 @@ function replaceTextWithStyles(obj, marker, replacement) {
   // Separamos el texto en líneas (Fabric.js almacena los estilos por línea)
   let lines = obj.text.split('\n');
   let newStyles = {};
-  
+
   // Recorremos cada línea
   for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
     let line = lines[lineIndex];
@@ -545,103 +568,106 @@ function replaceTextWithStyles(obj, marker, replacement) {
     }
     lines[lineIndex] = newLine;
   }
-  
+
   // Actualizamos el objeto de texto
   obj.text = lines.join('\n');
   obj.styles = newStyles;
 }
 
 function saveTemplate() {
-    const json = JSON.stringify(canvas.toJSON());
-    const blob = new Blob([json], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    let a = document.createElement("a");
-    a.href = url;
-    a.download = "plantilla.json";
-    a.click();
-    URL.revokeObjectURL(url);
-  }
+  const json = JSON.stringify(canvas.toJSON());
+  const blob = new Blob([json], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  let a = document.createElement("a");
+  a.href = url;
+  a.download = "plantilla.json";
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 function generatePreview() {
-    
-    //if (dataRows.length === 0) {
-    //  alert("Primero carga el archivo Excel para obtener los datos.");
-    //  return;
-    //}
-  
-    // Tomamos la primera fila de datos
-    const row = dataRows[0];
-  
-    // Creamos o limpiamos el canvas de vista previa
-    const previewCanvasElement = document.getElementById('preview-canvas');
-    // Si ya se ha inicializado un canvas de Fabric para la vista previa, lo destruimos
-    if (window.previewFabricCanvas) {
-      window.previewFabricCanvas.dispose();
-    }
-    // Creamos el canvas Fabric a partir del elemento existente
-    window.previewFabricCanvas = new fabric.Canvas('preview-canvas', { width: 1123, height: 794 });
-  
-    // Cargamos la configuración del canvas editable en el canvas de vista previa
-    window.previewFabricCanvas.loadFromJSON(canvas.toJSON(), function() {
-      let qrPromises = [];
-      // Recorremos todos los objetos del canvas de vista previa
-      window.previewFabricCanvas.getObjects().forEach(obj => {
-        // Reemplazar marcadores de texto (excepto QR)
-        if ((obj.type === 'textbox' || obj.type === 'i-text' || obj.type === 'text') && !obj.text.includes('{{qr}}')) {
+
+  //if (dataRows.length === 0) {
+  //  alert("Primero carga el archivo Excel para obtener los datos.");
+  //  return;
+  //}
+
+  // Tomamos la primera fila de datos
+  const row = dataRows[0];
+
+  // Creamos o limpiamos el canvas de vista previa
+  const previewCanvasElement = document.getElementById('preview-canvas');
+  // Si ya se ha inicializado un canvas de Fabric para la vista previa, lo destruimos
+  if (window.previewFabricCanvas) {
+    window.previewFabricCanvas.dispose();
+  }
+  // Creamos el canvas Fabric a partir del elemento existente
+  window.previewFabricCanvas = new fabric.Canvas('preview-canvas', { width: 1123, height: 794 });
+
+  // Cargamos la configuración del canvas editable en el canvas de vista previa
+  window.previewFabricCanvas.loadFromJSON(canvas.toJSON(), function () {
+    let qrPromises = [];
+    // Recorremos todos los objetos del canvas de vista previa
+    window.previewFabricCanvas.getObjects().forEach(obj => {
+      // Reemplazar marcadores de texto (excepto QR)
+      if ((obj.type === 'textbox' || obj.type === 'i-text' || obj.type === 'text') && !obj.text.includes('{{qr}}')) {
+        if (row && typeof row === 'object') { // Verifica que row esté definido y sea un objeto
           Object.keys(row).forEach(key => {
-            // Usa la función que reemplaza conservando estilos (ya definida en tu código)
             replaceTextWithStyles(obj, `{{${key}}}`, row[key] || '');
           });
+        } else {
+          console.error("La variable 'row' no está definida o no es un objeto:", row);
         }
-  
-        // Procesar el marcador de QR si existe
-        if ((obj.type === 'textbox' || obj.type === 'i-text' || obj.type === 'text') && obj.text.includes('{{qr}}')) {
-          let p = new Promise((resolve, reject) => {
-            let qrData = row['qr'];
-            if (!qrData || qrData.toString().trim() === "") {
-              console.error("No se proporcionó información válida para el QR en la fila:", row);
-              return resolve();
-            }
-            let fontSize = obj.fontSize || 30; // Usamos 30 como valor por defecto si no existe
-            let qrWidth = fontSize * 5;
-            // Generar el QR con tamaño predefinido y sin margen
-            QRCode.toDataURL(qrData, { errorCorrectionLevel: 'H', width: qrWidth, margin: 0 }, function(err, url) {
-              if (err) {
-                console.error("Error generando QR:", err);
-                resolve();
-              } else {
-                fabric.Image.fromURL(url, function(img) {
-                  img.set({
-                    left: obj.left,
-                    top: obj.top,
-                    angle: obj.angle,
-                    scaleX: 1,
-                    scaleY: 1
-                  });
-                  window.previewFabricCanvas.remove(obj);
-                  window.previewFabricCanvas.add(img);
-                  resolve();
+      }
+
+      // Procesar el marcador de QR si existe
+      if ((obj.type === 'textbox' || obj.type === 'i-text' || obj.type === 'text') && obj.text.includes('{{qr}}')) {
+        let p = new Promise((resolve, reject) => {
+          let qrData = row['qr'];
+          if (!qrData || qrData.toString().trim() === "") {
+            console.error("No se proporcionó información válida para el QR en la fila:", row);
+            return resolve();
+          }
+          let fontSize = obj.fontSize || 30; // Usamos 30 como valor por defecto si no existe
+          let qrWidth = fontSize * 5;
+          // Generar el QR con tamaño predefinido y sin margen
+          QRCode.toDataURL(qrData, { errorCorrectionLevel: 'H', width: qrWidth, margin: 0 }, function (err, url) {
+            if (err) {
+              console.error("Error generando QR:", err);
+              resolve();
+            } else {
+              fabric.Image.fromURL(url, function (img) {
+                img.set({
+                  left: obj.left,
+                  top: obj.top,
+                  angle: obj.angle,
+                  scaleX: 1,
+                  scaleY: 1
                 });
-              }
-            });
+                window.previewFabricCanvas.remove(obj);
+                window.previewFabricCanvas.add(img);
+                resolve();
+              });
+            }
           });
-          qrPromises.push(p);
-        }
-      });
-  
-      // Una vez procesados los posibles QR, se renderiza el canvas de vista previa
-      Promise.all(qrPromises).then(() => {
-        window.previewFabricCanvas.renderAll();
-      });
+        });
+        qrPromises.push(p);
+      }
     });
-  }
+
+    // Una vez procesados los posibles QR, se renderiza el canvas de vista previa
+    Promise.all(qrPromises).then(() => {
+      window.previewFabricCanvas.renderAll();
+    });
+  });
+}
 
 // Al final de qr.js, después de definir generatePreview():
 
 // Función debounce para evitar actualizaciones excesivas
 function debounce(func, delay) {
   let timeout;
-  return function(...args) {
+  return function (...args) {
     clearTimeout(timeout);
     timeout = setTimeout(() => {
       func.apply(this, args);
